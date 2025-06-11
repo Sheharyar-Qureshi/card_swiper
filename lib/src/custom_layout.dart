@@ -214,6 +214,7 @@ abstract class _CustomLayoutStateBase<T extends _SubSwiper> extends State<T>
         ? details.velocity.pixelsPerSecond.dx
         : details.velocity.pixelsPerSecond.dy;
 
+    // Velocity Constraints Added.
     const minVelocity = 300.0;
     const maxVelocity = 1000.0;
     final clampedVelocity = velocity.clamp(-maxVelocity, maxVelocity);

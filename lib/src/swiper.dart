@@ -349,6 +349,7 @@ abstract class _SwiperTimerMixin extends State<Swiper> {
         loop: widget.loop,
         reverse: true,
       );
+      
       if (widget.index == newIndex) return;
       widget.onIndexChanged?.call(newIndex);
     } else if (event is MoveIndexControllerEvent) {
