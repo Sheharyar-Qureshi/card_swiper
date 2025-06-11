@@ -196,7 +196,7 @@ abstract class _CustomLayoutStateBase<T extends _SubSwiper> extends State<T>
         currentIndex: _currentIndex,
         itemCount: widget.itemCount,
         loop: widget.loop,
-        reverse: widget.scrollDirection == Axis.vertical,
+        reverse: false,
       );
       if (_currentIndex == newIndex) return;
       return _move(event.targetPosition, nextIndex: newIndex);
@@ -214,40 +214,18 @@ abstract class _CustomLayoutStateBase<T extends _SubSwiper> extends State<T>
         ? details.velocity.pixelsPerSecond.dx
         : details.velocity.pixelsPerSecond.dy;
 
-    const minVelocity = 300.0;
-    const maxVelocity = 1000.0;
-    final clampedVelocity = velocity.clamp(-maxVelocity, maxVelocity);
-
-    if (widget.scrollDirection == Axis.vertical) {
-      if (_animationController.value >= 0.7 || clampedVelocity < -minVelocity) {
-        if (_currentIndex <= 0 && !widget.loop) {
-          return _move(0.5);
-        }
-        return _move(1.0, nextIndex: _currentIndex - 1);
-      } else if (_animationController.value < 0.3 ||
-          clampedVelocity > minVelocity) {
-        if (_currentIndex >= widget.itemCount - 1 && !widget.loop) {
-          return _move(0.5);
-        }
-        return _move(0.0, nextIndex: _currentIndex + 1);
-      } else {
+    if (_animationController.value >= 0.75 || velocity > 500.0) {
+      if (_currentIndex <= 0 && !widget.loop) {
         return _move(0.5);
       }
+      return _move(1.0, nextIndex: _currentIndex - 1);
+    } else if (_animationController.value < 0.25 || velocity < -500.0) {
+      if (_currentIndex >= widget.itemCount - 1 && !widget.loop) {
+        return _move(0.5);
+      }
+      return _move(0.0, nextIndex: _currentIndex + 1);
     } else {
-      if (_animationController.value >= 0.7 || clampedVelocity > minVelocity) {
-        if (_currentIndex <= 0 && !widget.loop) {
-          return _move(0.5);
-        }
-        return _move(1.0, nextIndex: _currentIndex - 1);
-      } else if (_animationController.value < 0.3 ||
-          clampedVelocity < -minVelocity) {
-        if (_currentIndex >= widget.itemCount - 1 && !widget.loop) {
-          return _move(0.5);
-        }
-        return _move(0.0, nextIndex: _currentIndex + 1);
-      } else {
-        return _move(0.5);
-      }
+      return _move(0.5);
     }
   }
 
@@ -261,29 +239,14 @@ abstract class _CustomLayoutStateBase<T extends _SubSwiper> extends State<T>
 
   void _onPanUpdate(DragUpdateDetails details) {
     if (_lockScroll) return;
-
-    final dragDistance = widget.scrollDirection == Axis.horizontal
-        ? details.globalPosition.dx - _currentPos
-        : details.globalPosition.dy - _currentPos;
-
-    var resistance = 1.0;
-    if (!widget.loop) {
-      if (_currentIndex <= 0 && dragDistance > 0) {
-        resistance = 0.3;
-      } else if (_currentIndex >= widget.itemCount - 1 && dragDistance < 0) {
-        resistance = 0.3;
-      }
-    }
-
     var value = _currentValue +
-        (dragDistance * resistance) /
-            (widget.scrollDirection == Axis.horizontal
-                ? _swiperWidth
-                : _swiperHeight) /
+        ((widget.scrollDirection == Axis.horizontal
+                    ? details.globalPosition.dx
+                    : details.globalPosition.dy) -
+                _currentPos) /
+            _swiperWidth /
             2;
-
-    value = value.clamp(0.0, 1.0);
-
+    // no loop ?
     if (!widget.loop) {
       if (widget.itemCount == 1) {
         value = 0.5;

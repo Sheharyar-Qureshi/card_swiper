@@ -337,24 +337,16 @@ abstract class _SwiperTimerMixin extends State<Swiper> {
     }
   }
 
-  Future<void> _onController() async {
-    final controller = widget.controller;
-    if (controller == null) return;
-    final event = controller.event;
-    if (event == null) return;
-    if (event is StepBasedIndexControllerEvent) {
-      final newIndex = event.calcNextIndex(
-        currentIndex: widget.index ?? 0,
-        itemCount: widget.itemCount,
-        loop: widget.loop,
-        reverse: true,
-      );
-      if (widget.index == newIndex) return;
-      widget.onIndexChanged?.call(newIndex);
-    } else if (event is MoveIndexControllerEvent) {
-      final newIndex = event.newIndex;
-      if (widget.index == newIndex) return;
-      widget.onIndexChanged?.call(newIndex);
+  void _onController() {
+    final event = _controller.event;
+    if (event is AutoPlaySwiperControllerEvent) {
+      if (event.autoplay) {
+        if (_timer == null) {
+          _startAutoplay();
+        }
+      } else {
+        _stopAutoplay();
+      }
     }
   }
 
@@ -912,7 +904,7 @@ class _StackViewState extends _CustomLayoutStateBase<_StackSwiper> {
       final space = (_swiperHeight - widget.itemHeight!) / 2;
       offsets = widget.axisDirection == AxisDirection.up
           ? [-space, -space / 3 * 2, -space / 3, 0.0, _swiperHeight]
-          : [-space, space * 2, space * 1.2, 0.0, -_swiperHeight];
+          : [-space, space / 3 + 90, space, 0.0, -_swiperHeight];
     }
   }
 
@@ -945,25 +937,22 @@ class _StackViewState extends _CustomLayoutStateBase<_StackSwiper> {
     final s = _getValue(scales, animationValue, i);
     final f = _getValue(offsets, animationValue, i);
     final o = _getValue(opacity, animationValue, i);
+    print('buildCalled => i: $realIndex a: $animationValue f: $f o: $o');
+    print('offsets: $offsets');
 
     final offset = widget.scrollDirection == Axis.horizontal
         ? widget.axisDirection == AxisDirection.left
             ? Offset(f, 0.0)
             : Offset(-f, 0.0)
-        : widget.axisDirection == AxisDirection.up
-            ? Offset(0.0, -f)
-            : Offset(0.0, f);
+        : Offset(0.0, f);
+    // : Offset(0.0, -f);
 
     final alignment = widget.scrollDirection == Axis.horizontal
         ? widget.axisDirection == AxisDirection.left
             ? Alignment.centerLeft
             : Alignment.centerRight
-        : widget.axisDirection == AxisDirection.up
-            ? Alignment.topCenter
-            : Alignment.bottomCenter;
-
-    // Calculate the reversed index to show newer cards below
-    final reversedRealIndex = widget.itemCount - 1 - realIndex;
+        : Alignment.topCenter;
+    // : Alignment.bottomCenter;
 
     return Opacity(
       opacity: o,
@@ -976,7 +965,7 @@ class _StackViewState extends _CustomLayoutStateBase<_StackSwiper> {
           child: SizedBox(
             width: widget.itemWidth ?? double.infinity,
             height: widget.itemHeight ?? double.infinity,
-            child: widget.itemBuilder!(context, reversedRealIndex),
+            child: widget.itemBuilder!(context, realIndex),
           ),
         ),
       ),
