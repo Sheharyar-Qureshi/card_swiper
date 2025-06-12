@@ -916,8 +916,8 @@ class _StackViewState extends _CustomLayoutStateBase<_StackSwiper> {
           ? [-space, -space / 3 * 2, -space / 3, 0.0, _swiperHeight]
           : [
               -space,
-              widget.itemHeight! / 6,
-              widget.itemHeight! / 12,
+              widget.itemHeight! / 9,
+              widget.itemHeight! / 18,
               0.0,
               -_swiperHeight
             ];
