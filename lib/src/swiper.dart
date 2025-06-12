@@ -349,7 +349,7 @@ abstract class _SwiperTimerMixin extends State<Swiper> {
         loop: widget.loop,
         reverse: true,
       );
-      
+
       if (widget.index == newIndex) return;
       widget.onIndexChanged?.call(newIndex);
     } else if (event is MoveIndexControllerEvent) {
@@ -904,6 +904,7 @@ class _StackViewState extends _CustomLayoutStateBase<_StackSwiper> {
   late List<double> opacity;
 
   void _updateValues() {
+    print('direction: ${widget.axisDirection}');
     if (widget.scrollDirection == Axis.horizontal) {
       final space = (_swiperWidth - widget.itemWidth!) / 2;
       offsets = widget.axisDirection == AxisDirection.left
@@ -913,7 +914,13 @@ class _StackViewState extends _CustomLayoutStateBase<_StackSwiper> {
       final space = (_swiperHeight - widget.itemHeight!) / 2;
       offsets = widget.axisDirection == AxisDirection.up
           ? [-space, -space / 3 * 2, -space / 3, 0.0, _swiperHeight]
-          : [-space, space * 2, space * 1.2, 0.0, -_swiperHeight];
+          : [
+              -space,
+              widget.itemHeight! / 4,
+              widget.itemHeight! / 8,
+              0.0,
+              -_swiperHeight
+            ];
     }
   }
 
